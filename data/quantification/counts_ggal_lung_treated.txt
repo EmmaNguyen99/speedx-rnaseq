@@ -1,0 +1,10 @@
+"ENSGALG00000011847"	50
+"ENSGALG00000011854"	75
+"ENSGALG00000011856"	123
+"ENSGALG00000011857"	906
+"ENSGALG00000011859"	345
+__no_feature	1265
+__ambiguous	0
+__too_low_aQual	666
+__not_aligned	656
+__alignment_not_unique	0
