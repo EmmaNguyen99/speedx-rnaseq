@@ -1,16 +1,37 @@
 #!/usr/bin/env nextflow
 
 params.outdir = "results"
-params.fastq = "$baseDir/data/ggal/*_{1,2}.fq"
+params.fastq = "$baseDir/data/test/*_{1,2}.fq"
+// params.fastq = "$baseDir/data/test/*.fq"
 params.multiqc = "$baseDir/multiqc"
 params.ref = "$baseDir/data/ggal/ggal_1_48850000_49020000.Ggal71.500bpflank.fa"
 params.gff = "$baseDir/data/ggal/ggal_1_48850000_49020000.bed.gff"
 params.script = "$baseDir/bin/deseq2.R"
 
+// process FASTQC {
+//     memory '32 GB'
+//     cpus 4
+//     tag "FASTQC on $sample_id"
+//     conda 'bioconda::fastqc=0.12.1'
+//     publishDir "$params.outdir/fastqc", mode: 'copy'
+
+//     input:
+//     tuple val(sample_id), path(reads)
+
+//     output:
+//     path "fastqc_${sample_id}_logs", emit: logs
+
+//     script:
+//     """
+//     mkdir fastqc_${sample_id}_logs
+//     fastqc -o fastqc_${sample_id}_logs -f fastq -q ${reads}
+//     """
+// }
+
 process FASTQC {
-    memory '32 GB'
-    cpus 4
-    tag "FASTQC on $sample_id"
+    memory '4 GB'
+    cpus 2
+    tag "FASTQC on"
     conda 'bioconda::fastqc=0.12.1'
     publishDir "$params.outdir/fastqc", mode: 'copy'
 
@@ -23,7 +44,7 @@ process FASTQC {
     script:
     """
     mkdir fastqc_${sample_id}_logs
-    fastqc -t 4 -o fastqc_${sample_id}_logs -f fastq -q ${reads}
+    fastqc -t 2 -o fastqc_${sample_id}_logs -f fastq -q ${reads}
     """
 }
 
@@ -134,18 +155,18 @@ process DIFFERENTIAL_EXPRESSION {
 
 workflow {
     read_pairs_ch = Channel.fromFilePairs(params.fastq, checkIfExists: true)
+    //read_pairs_ch = Channel.fromPath(params.fastq)
     FASTQC(read_pairs_ch)
     //MULTIQC(FASTQC.out, params.multiqc)
-    TRIMMING(read_pairs_ch)
-    MAPPING(params.ref, TRIMMING.out)
-    QUANTIFICATION(params.gff, MAPPING.out)
+    // TRIMMING(read_pairs_ch)
+    // MAPPING(params.ref, TRIMMING.out)
+    // QUANTIFICATION(params.gff, MAPPING.out)
 
-    QUANTIFICATION.out
-    .collect()
-    .set{ htseq_outputs }
+    // QUANTIFICATION.out
+    // .collect()
+    // .set{ htseq_outputs }
 
     // htseq_outputs = ['/shared/homes/162557/home/uts/speedx/RNA-seq-2/data/quantification/counts_ggal_gut_treated.txt', '/shared/homes/162557/home/uts/speedx/RNA-seq-2/data/quantification/counts_ggal_liver_untreated.txt', '/shared/homes/162557/home/uts/speedx/RNA-seq-2/data/quantification/counts_ggal_lung_treated.txt', '/shared/homes/162557/home/uts/speedx/RNA-seq-2/data/quantification/counts_ggal_spleen_untreated.txt']
 
     // DIFFERENTIAL_EXPRESSION(htseq_outputs)
 }
-
